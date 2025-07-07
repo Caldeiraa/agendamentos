@@ -1,108 +1,134 @@
-import React, { useState } from "react";
-import "tailwindcss";
-
-const horariosDisponiveis = [
-  "09:00", "10:00", "11:00",
-  "13:00", "14:00", "15:00",
-  "16:00", "17:00",
-];
-
-const servicos = ["Corte de cabelo", "Manicure", "Consulta", "Massagem"];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function Agendamento() {
+  const [nome_cliente, setNomeCliente] = useState("");
   const [data, setData] = useState("");
   const [horario, setHorario] = useState("");
-  const [servico, setServico] = useState("");
-  const [nome, setNome] = useState("");
-  const [confirmado, setConfirmado] = useState(false);
+  const [servicos, setServicos] = useState("");
 
-  const handleAgendamento = () => {
-    if (data && horario && servico && nome) {
-      setConfirmado(true);
-      setTimeout(() => setConfirmado(false), 4000);
-    } else {
-      alert("Preencha todos os campos.");
+  const [listaHorarios, setListaHorarios] = useState([]);
+  const [listaServicos, setListaServicos] = useState([]);
+  const [mensagem, setMensagem] = useState("");
+
+  // Buscar horários e serviços ao carregar
+  useEffect(() => {
+    axios.get("http://localhost:5000/horarios")
+      .then(res => setListaHorarios(res.data))
+      .catch(err => console.error("Erro ao buscar horários:", err));
+
+    axios.get("http://localhost:5000/servicos")
+      .then(res => setListaServicos(res.data))
+      .catch(err => console.error("Erro ao buscar serviços:", err));
+  }, []);
+
+  const handleAgendamento = async () => {
+    if (!nome_cliente || !data || !horario || !servicos) {
+      setMensagem("Preencha todos os campos.");
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:5000/agendamento", {
+        nome_cliente,
+        data,
+        horario,
+        servicos,
+      });
+
+      setMensagem("Agendamento realizado com sucesso!");
+      // limpar campos
+      setNomeCliente("");
+      setData("");
+      setHorario("");
+      setServicos("");
+    } catch (error) {
+      console.error("Erro ao agendar:", error);
+      setMensagem("Erro ao agendar.");
     }
   };
 
   return (
-   <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-  <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
-    <h2 className="text-3xl font-semibold text-center mb-8 text-gray-800">
-      Agendamento de Serviço
-    </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
+        <h2 className="text-3xl font-semibold text-center mb-8 text-gray-800">
+          Agendamento de Serviço
+        </h2>
 
-    <div className="mb-6">
-      <label className="block mb-2 text-md font-medium text-gray-700">Seu Nome</label>
-      <input
-        type="text"
-        value={nome}
-        onChange={(e) => setNome(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder="Digite seu nome"
-      />
-    </div>
+        {/* Nome */}
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Nome</label>
+          <input
+            type="text"
+            value={nome_cliente}
+            onChange={(e) => setNomeCliente(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Digite seu nome"
+          />
+        </div>
 
-    <div className="mb-6">
-      <label className="block mb-2 text-md font-medium text-gray-700">Data</label>
-      <input
-        type="date"
-        value={data}
-        onChange={(e) => setData(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+        {/* Data */}
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Data</label>
+          <input
+            type="date"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          />
+        </div>
 
-    <div className="mb-8">
-      <label className="block mb-2 text-md font-medium text-gray-700">Horário</label>
-      <div className="grid grid-cols-4 gap-3 sm:grid-cols-3 md:grid-cols-4">
-        {horariosDisponiveis.map((hora) => (
-          <button
-            key={hora}
-            onClick={() => setHorario(hora)}
-            className={`py-3 rounded-lg text-sm font-semibold border transition
-              ${
-                horario === hora
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-blue-100"
-              }`}
+        {/* Horário */}
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Horário</label>
+          <div className="grid grid-cols-3 gap-2">
+            {listaHorarios.map((h) => (
+              <button
+                key={h.id_horario}
+                type="button"
+                onClick={() => setHorario(String(h.id_horario))}
+                className={`py-2 px-3 rounded-lg text-sm border font-semibold transition ${
+                  horario === String(h.id_horario)
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-blue-100"
+                }`}
+              >
+                {h.horario.slice(0, 5)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Serviço */}
+        <div className="mb-6">
+          <label className="block font-medium mb-1">Serviço</label>
+          <select
+            value={servicos}
+            onChange={(e) => setServicos(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
           >
-            {hora}
-          </button>
-        ))}
+            <option value="">Selecione um serviço</option>
+            {listaServicos.map((s) => (
+              <option key={s.id_servicos} value={String(s.id_servicos)}>
+                {s.servico}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={handleAgendamento}
+          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+        >
+          Confirmar Agendamento
+        </button>
+
+        {mensagem && (
+          <div className="mt-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded text-center">
+            {mensagem}
+          </div>
+        )}
       </div>
     </div>
-
-    <div className="mb-8">
-      <label className="block mb-2 text-md font-medium text-gray-700">Serviço</label>
-      <select
-        value={servico}
-        onChange={(e) => setServico(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Selecione um serviço</option>
-        {servicos.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    <button
-      onClick={handleAgendamento}
-      className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-    >
-      Confirmar Agendamento
-    </button>
-
-    {confirmado && (
-      <div className="mt-6 bg-green-100 text-green-700 px-5 py-3 rounded-lg text-center font-medium">
-        Agendamento realizado com sucesso!
-      </div>
-    )}
-  </div>
-</div>
-
   );
 }
