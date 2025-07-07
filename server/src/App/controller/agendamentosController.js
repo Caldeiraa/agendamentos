@@ -1,7 +1,11 @@
 const Agendamento = require("../model/agendamentos");
 
 class AgendamentosController {
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
   criarAgendamento = (req, res) => {
     const { nome_cliente, data, horario, servicos } = req.body;
 
@@ -9,7 +13,11 @@ class AgendamentosController {
       return res.status(400).json({ erro: 'Preencha todos os campos.' });
     }
 
+<<<<<<< HEAD
     Agendamento.criar({ nome_cliente, data, id_horario: horario, id_servico: servicos })
+=======
+    Agendamento.criar({ nome_cliente, data, horario, servicos })
+>>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
       .then(() => {
         res.status(201).json({ mensagem: 'Agendamento realizado com sucesso!' });
       })
@@ -37,7 +45,11 @@ class AgendamentosController {
       })
       .catch(err => {
         console.error(err);
+<<<<<<< HEAD
         res.status(500).json({ erro: 'Erro ao buscar horários.' });
+=======
+        res.status(500).json({ erro: 'Erro ao buscar agendamentos.' });
+>>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
       });
   };
 
@@ -48,6 +60,7 @@ class AgendamentosController {
       })
       .catch(err => {
         console.error(err);
+<<<<<<< HEAD
         res.status(500).json({ erro: 'Erro ao buscar serviços.' });
       });
   };
@@ -67,6 +80,9 @@ class AgendamentosController {
       .catch(err => {
         console.error(err);
         res.status(500).json({ erro: "Erro ao buscar horários disponíveis." });
+=======
+        res.status(500).json({ erro: 'Erro ao buscar agendamentos.' });
+>>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
       });
   };
 }
