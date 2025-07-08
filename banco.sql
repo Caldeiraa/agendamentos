@@ -19,6 +19,12 @@ CREATE TABLE servicos (
   servico VARCHAR(50) NOT NULL
 );
 
+create table preco (
+	id_preco int primary key auto_increment,
+    preco decimal(5,2),
+    id_servico int not null, 
+    foreign key (id_servico) references servicos(id_servicos)
+);
 -- Tabela de agendamento, com FK para horário e serviço
 CREATE TABLE agendamento_servico (
   id_agendamentos INT PRIMARY KEY AUTO_INCREMENT,
@@ -29,6 +35,8 @@ CREATE TABLE agendamento_servico (
   FOREIGN KEY (id_horario) REFERENCES horarios_disponiveis(id_horario),
   FOREIGN KEY (id_servico) REFERENCES servicos(id_servicos)
 );
+
+
 
 -- Inserindo horários
 INSERT INTO horarios_disponiveis (horario) VALUES 
