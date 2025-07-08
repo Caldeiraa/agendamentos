@@ -46,26 +46,33 @@ class AgendamentosController {
   };
 
   obterHorariosPorData = (req, res) => {
-    const { data } = req.query;
+  const { data } = req.query;
 
-    if (!data) {
-      return res.status(400).json({ erro: "Informe a data no formato YYYY-MM-DD." });
-    }
+  if (!data) {
+    return res.status(400).json({ erro: "Informe a data no formato YYYY-MM-DD." });
+  }
 
-    const diaSemana = new Date(data).getDay();
-    if (diaSemana === 0 || diaSemana === 1) {
-      return res.status(400).json({ erro: "Não há horários disponíveis em domingos ou segundas-feiras." });
-    }
+  const dataConvertida = new Date(`${data}T00:00:00`);
 
-    Agendamento.listarHorariosDisponiveisPorData(data)
-      .then(horarios => {
-        res.status(200).json(horarios);
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ erro: "Erro ao buscar horários disponíveis." });
-      });
-  };
+  if (isNaN(dataConvertida.getTime())) {
+    return res.status(400).json({ erro: "Data inválida." });
+  }
+
+  const diaSemana = dataConvertida.getDay();
+
+  if (diaSemana === 0 || diaSemana === 1) {
+    return res.status(400).json({ erro: "Domingo e segunda indisponíveis." });
+  }
+
+  Agendamento.listarHorariosDisponiveisPorData(data)
+    .then(horarios => {
+      res.status(200).json(horarios);
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ erro: "Erro ao buscar horários disponíveis." });
+    });
+};
 
   obterCortes = (req, res) => {
     Agendamento.listarCortes()

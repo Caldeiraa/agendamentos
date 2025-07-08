@@ -23,12 +23,15 @@ export default function Agendamento() {
       return;
     }
 
-    const diaSemana = new Date(data).getDay();
-    if (diaSemana === 0 || diaSemana === 1) {
-      setListaHorarios([]);
-      setMensagem("Não é possível agendar em domingos ou segundas-feiras.");
-      return;
-    }
+   const dataCorrigida = new Date(`${data}T00:00:00`);
+const diaSemana = dataCorrigida.getDay();
+
+if (diaSemana === 0 || diaSemana === 1) {
+  setListaHorarios([]);
+  setMensagem("Não é possível agendar em domingos ou segundas-feiras.");
+  return;
+}
+
 
     axios
       .get(`http://localhost:5000/horarios-dis?data=${data}`)

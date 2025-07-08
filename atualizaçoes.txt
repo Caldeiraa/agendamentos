@@ -1,4 +1,4 @@
 o que precisa ser feito 
-horarios no domingo e na segunda nao deverao aparecer para o usuario
-cadastro de servicos e horarios
+horarios no domingo e na segunda nao deverao aparecer para o usuario == feito 
+cadastro de servicos e horarios 
 no momento somente essas duas alteraçoes
