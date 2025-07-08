@@ -1,11 +1,6 @@
 const Agendamento = require("../model/agendamentos");
 
 class AgendamentosController {
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
   criarAgendamento = (req, res) => {
     const { nome_cliente, data, horario, servicos } = req.body;
 
@@ -13,11 +8,12 @@ class AgendamentosController {
       return res.status(400).json({ erro: 'Preencha todos os campos.' });
     }
 
-<<<<<<< HEAD
-    Agendamento.criar({ nome_cliente, data, id_horario: horario, id_servico: servicos })
-=======
+    const diaSemana = new Date(data).getDay(); // 0 = domingo, 1 = segunda
+    if (diaSemana === 0 || diaSemana === 1) {
+      return res.status(400).json({ erro: "Não é possível agendar em domingos ou segundas-feiras." });
+    }
+
     Agendamento.criar({ nome_cliente, data, horario, servicos })
->>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
       .then(() => {
         res.status(201).json({ mensagem: 'Agendamento realizado com sucesso!' });
       })
@@ -39,17 +35,35 @@ class AgendamentosController {
   };
 
   obterHorariosDis = (req, res) => {
-    Agendamento.listarHorariosDisponiveis()
+    Agendamento.listarTodosHorarios()
       .then(resultados => {
         res.status(200).json(resultados);
       })
       .catch(err => {
         console.error(err);
-<<<<<<< HEAD
         res.status(500).json({ erro: 'Erro ao buscar horários.' });
-=======
-        res.status(500).json({ erro: 'Erro ao buscar agendamentos.' });
->>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
+      });
+  };
+
+  obterHorariosPorData = (req, res) => {
+    const { data } = req.query;
+
+    if (!data) {
+      return res.status(400).json({ erro: "Informe a data no formato YYYY-MM-DD." });
+    }
+
+    const diaSemana = new Date(data).getDay();
+    if (diaSemana === 0 || diaSemana === 1) {
+      return res.status(400).json({ erro: "Não há horários disponíveis em domingos ou segundas-feiras." });
+    }
+
+    Agendamento.listarHorariosDisponiveisPorData(data)
+      .then(horarios => {
+        res.status(200).json(horarios);
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao buscar horários disponíveis." });
       });
   };
 
@@ -60,29 +74,7 @@ class AgendamentosController {
       })
       .catch(err => {
         console.error(err);
-<<<<<<< HEAD
         res.status(500).json({ erro: 'Erro ao buscar serviços.' });
-      });
-  };
-
-  // ✅ Novo método para pegar horários disponíveis por data
-  obterHorariosPorData = (req, res) => {
-    const { data } = req.query;
-    
-    if (!data) {
-      return res.status(400).json({ erro: "Informe a data no formato YYYY-MM-DD." });
-    }
-
-    Agendamento.listarHorariosDisponiveisPorData(data)
-      .then(horarios => {
-        res.status(200).json(horarios);
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ erro: "Erro ao buscar horários disponíveis." });
-=======
-        res.status(500).json({ erro: 'Erro ao buscar agendamentos.' });
->>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
       });
   };
 }

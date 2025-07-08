@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
@@ -19,17 +19,4 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>
 );
-=======
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
 
-import App from './App.jsx'
-import Agendamentos from './views/tela-agendamento.jsx'
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Agendamentos />
-  </StrictMode>,
-)
->>>>>>> 054ac04000930f9c319adac57cc65b2c20b09541
