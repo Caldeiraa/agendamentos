@@ -11,40 +11,42 @@ export default function Agendamento() {
   const [listaServicos, setListaServicos] = useState([]);
   const [mensagem, setMensagem] = useState("");
 
+  // Buscar lista de serviços
   useEffect(() => {
-    axios.get("http://localhost:5000/servicos")
-      .then(res => setListaServicos(res.data))
-      .catch(err => console.error("Erro ao buscar serviços:", err));
+    axios
+      .get("http://localhost:5000/precos")
+      .then((res) => setListaServicos(res.data))
+      .catch((err) => console.error("Erro ao buscar serviços:", err));
   }, []);
 
+  // Buscar horários disponíveis dinamicamente
   useEffect(() => {
-    if (!data) {
+    if (!data || !servicos) {
       setListaHorarios([]);
       return;
     }
 
-   const dataCorrigida = new Date(`${data}T00:00:00`);
-const diaSemana = dataCorrigida.getDay();
-
-if (diaSemana === 0 || diaSemana === 1) {
-  setListaHorarios([]);
-  setMensagem("Não é possível agendar em domingos ou segundas-feiras.");
-  return;
-}
-
+    const diaSemana = new Date(`${data}T00:00:00`).getDay();
+    if (diaSemana === 0 || diaSemana === 1) {
+      setListaHorarios([]);
+      setMensagem("Domingo e segunda indisponíveis.");
+      return;
+    }
 
     axios
-      .get(`http://localhost:5000/horarios-dis?data=${data}`)
-      .then(res => {
+      .get(
+        `http://localhost:5000/horarios-disponiveis-dinamicos?data=${data}&id_servico=${servicos}`
+      )
+      .then((res) => {
         setListaHorarios(res.data);
         setMensagem("");
       })
-      .catch(err => {
-        console.error("Erro ao buscar horários disponíveis:", err);
+      .catch((err) => {
+        console.error("Erro ao buscar horários:", err);
         setListaHorarios([]);
         setMensagem("Erro ao buscar horários.");
       });
-  }, [data]);
+  }, [data, servicos]);
 
   const handleAgendamento = async () => {
     if (!nome_cliente || !data || !horario || !servicos) {
@@ -54,18 +56,16 @@ if (diaSemana === 0 || diaSemana === 1) {
 
     const diaSemana = new Date(data).getDay();
     if (diaSemana === 0 || diaSemana === 1) {
-      setListaHorarios([]);
-      setMensagem("Não é possível agendar em domingos ou segundas-feiras.");
+      setMensagem("Domingo e segunda indisponíveis.");
       return;
     }
-
 
     try {
       await axios.post("http://localhost:5000/agendamento", {
         nome_cliente,
         data,
         horario,
-        servicos,
+        servicos: Number(servicos),
       });
 
       setMensagem("Agendamento realizado com sucesso!");
@@ -81,78 +81,74 @@ if (diaSemana === 0 || diaSemana === 1) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
-        <h2 className="text-3xl font-semibold text-center mb-8 text-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-10">
+      <div className="w-full max-w-lg bg-white p-6 rounded-2xl shadow-md">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Agendamento de Serviço
         </h2>
 
         {/* Nome */}
         <div className="mb-4">
-          <label className="block font-medium mb-1">Nome</label>
+          <label className="block mb-1 font-medium">Seu nome</label>
           <input
             type="text"
             value={nome_cliente}
             onChange={(e) => setNomeCliente(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Digite seu nome"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ex: João Silva"
           />
         </div>
 
         {/* Data */}
         <div className="mb-4">
-          <label className="block font-medium mb-1">Data</label>
+          <label className="block mb-1 font-medium">Data desejada</label>
           <input
             type="date"
             value={data}
             onChange={(e) => setData(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
-        {/* Horário */}
-        <div className="mb-4">
-          <label className="block font-medium mb-1">Horário</label>
-          {listaHorarios.length > 0 ? (
-            <div className="grid grid-cols-3 gap-2">
-              {listaHorarios.map((h) => (
-                <button
-                  key={h.id_horario}
-                  type="button"
-                  onClick={() => setHorario(String(h.id_horario))}
-                  className={`py-2 px-3 rounded-lg text-sm border font-semibold transition ${horario === String(h.id_horario)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-blue-100"
-                    }`}
-                >
-                  {h.horario.slice(0, 5)}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 mt-1">
-              {data ? "Nenhum horário disponível para esta data." : "Selecione uma data para ver os horários disponíveis."}
-            </p>
-          )}
-        </div>
-
         {/* Serviço */}
-        <div className="mb-6">
-          <label className="block font-medium mb-1">Serviço</label>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Escolha o serviço</label>
           <select
             value={servicos}
             onChange={(e) => setServicos(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Selecione um serviço</option>
+            <option value="">Selecione...</option>
             {listaServicos.map((s) => (
-              <option key={s.id_servicos} value={String(s.id_servicos)}>
-                {s.servico}
+              <option key={s.id} value={s.id}>
+                {s.nome}
               </option>
             ))}
           </select>
         </div>
 
+        {/* Horário Dinâmico */}
+        <div className="mb-6">
+          <label className="block mb-2 font-medium">Escolha o horário</label>
+          <input
+            type="time"
+            step="60" // 1 minuto
+            value={horario}
+            onChange={(e) => setHorario(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            min={listaHorarios[0]}
+            max={listaHorarios[listaHorarios.length - 1]}
+            list="horarios-sugeridos"
+          />
+          <datalist id="horarios-sugeridos">
+            {listaHorarios.map((h, i) => (
+              <option key={i} value={h} />
+            ))}
+          </datalist>
+        </div>
+
+
+        {/* Botão de Agendar */}
         <button
           onClick={handleAgendamento}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
@@ -160,8 +156,9 @@ if (diaSemana === 0 || diaSemana === 1) {
           Confirmar Agendamento
         </button>
 
+        {/* Mensagem de feedback */}
         {mensagem && (
-          <div className="mt-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded text-center">
+          <div className="mt-4 px-4 py-2 text-center bg-yellow-100 text-yellow-800 rounded-md">
             {mensagem}
           </div>
         )}
